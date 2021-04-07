@@ -17,6 +17,7 @@ import torch.nn.functional as F
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 from torch import nn
+from axial_attention import AxialAttention
 
 
 """
@@ -134,10 +135,19 @@ class CAE(nn.Module):
         super(CAE, self).__init__()
         
         self.encoder = Encoder()
+        self.attn = AxialAttention(
+            dim = 32,
+            heads = 4,
+            dim_index = 1,
+            num_dimensions = 1
+        )
         self.decoder = Decoder()
         
     def forward(self, img):
         x = self.encoder(img)
+        x = torch.unsqueeze(x,2)
+        x = self.attn(x)
+        x = torch.squeeze(x)
         x = self.decoder(x)
         
         return x
